@@ -6,35 +6,43 @@
 /*   By: shima <shima@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/27 10:39:50 by shima             #+#    #+#             */
-/*   Updated: 2022/08/27 11:16:09 by shima            ###   ########.fr       */
+/*   Updated: 2022/08/28 10:56:09 by shima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/philo.h"
 
-int	main(int argc, char *argv[])
+// int	main(int argc, char *argv[])
+// {
+// 	t_arg	info;
+
+// 	info.number_of_philosophers = ft_atoi(argv[1]);
+// 	info.number_of_philosophers = ft_atoi(argv[1]);
+// }
+
+void *f(void *p)
 {
-	
+	int	*cnt;
+
+	cnt = p;
+	for (int i = 0; i < 10000; ++i)
+		++(*cnt);
+	return (NULL);
 }
 
-// void *do_something(void *arg)
-// {
-//    printf("do something\n");
-//    sleep(1);
-// }
+int main()
+{
+	int cnt = 0;
+	pthread_t thread1;
+	pthread_t thread2;
 
-// int main(void)
-// {
-//    pthread_t thread;
-//    void *retval;
+	// mainの処理とは別に働かせる。並列処理。
+	pthread_create(&thread1, NULL, &f, &cnt);
+	pthread_create(&thread2, NULL, &f, &cnt);
 
-//    // スレッドを作成
-//    if (pthread_create(&thread, NULL, do_something, NULL) != 0)
-//        // エラー処理
-//        return (0);
-//    // スレッドの終了方法
-//    // 1. スレッドが終了するまで待つ
-//    pthread_join(thread, &retval);
-//    // 2. スレッドを待たない
-//    pthread_detach(thread);
-// }
+	// 終了するまで待機。pthread_createとセット
+	pthread_join(thread1, NULL);
+	pthread_join(thread2, NULL);
+
+	printf("cnt: %d\n", cnt); // 20000がでると思った？
+}

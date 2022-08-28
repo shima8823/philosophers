@@ -2,7 +2,7 @@ CFLAGS =
 # CFLAGS = -Wall -Wextra -Werror
 CPPFLAGS = -I includes
 NAME = philo
-SRCS = main.c
+SRCS = main.c utility.c
 OBJ = $(addprefix $(OBJDIR)/, $(SRCS:%.c=%.o))
 OBJDIR = obj
 VPATH = srcs
