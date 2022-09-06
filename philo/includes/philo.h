@@ -6,7 +6,7 @@
 /*   By: shima <shima@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/27 10:40:17 by shima             #+#    #+#             */
-/*   Updated: 2022/09/05 10:55:14 by shima            ###   ########.fr       */
+/*   Updated: 2022/09/06 12:37:14 by shima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,12 +22,12 @@
 
 typedef struct s_philo
 {
-	int	id;
-	int right;
-	int left;
-	long long time_last_meal;
-	
-	pthread_t		thread;
+	int					id;
+	int					right;
+	int					left;
+	long long			time_last_meal;
+	pthread_t			thread;
+	pthread_mutex_t		m_time_last_meal;
 	struct s_monitor	*monitor;
 }	t_philo;
 
@@ -37,8 +37,8 @@ typedef struct s_monitor
 	int				time_to_die;
 	int				time_to_eat;
 	int				time_to_sleep;
-	
-	
+	pthread_mutex_t	m_writing;
+	pthread_mutex_t	m_is_finish;
 	pthread_mutex_t	*forks;
 	t_philo			*philos;
 }	t_monitor;

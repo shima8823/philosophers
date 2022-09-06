@@ -6,23 +6,30 @@
 /*   By: shima <shima@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/27 10:39:50 by shima             #+#    #+#             */
-/*   Updated: 2022/09/05 11:46:18 by shima            ###   ########.fr       */
+/*   Updated: 2022/09/06 13:47:24 by shima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/philo.h"
 
+// main
 bool	init_monitor(int argc, char *argv[], t_monitor *monitor);
 bool	init_philo(t_monitor *monitor);
 void	*philosophers(void *arg);
 long long	get_timestamp(void);
+void	print_log(int id, char *act_msg, pthread_mutex_t *m_writing);
 
+
+// philo
 void	grab_fork(t_monitor *monitor, int id, int index);
-void	eating(int id, long long *time_last_meal, int time_to_eat);
+void	eating(t_philo *philo, int time_to_eat);
 void	down_forks(t_monitor *monitor, int right, int left);
-void	sleeping(int time_to_sleep, int id);
-void	thinking(int id);
+void	sleeping(int time_to_sleep, int id, pthread_mutex_t *m_writing);
+void	thinking(int id, pthread_mutex_t *m_writing);
 
+// monitor
+void	*monitor_thread(void *arg);
+bool	is_philo_died(t_philo *philo);
 
 // test
 void	print_monitor(t_monitor monitor);
@@ -30,28 +37,35 @@ void	print_monitor(t_monitor monitor);
 int	main(int argc, char *argv[])
 {
 	t_monitor	monitor;
+	pthread_t	thread;
 	int			i;
 
-	
 	if (!init_monitor(argc, argv, &monitor))
 		return (1);
 	init_philo(&monitor);
-	print_monitor(monitor);
+	// print_monitor(monitor);
+	// printf("pointer m_writing: %p\n", &monitor.m_writing);
+	// printf("pointer m_writing0: %p\n", &monitor.philos[0].monitor->m_writing);
+	// printf("pointer m_writing2: %p\n", &monitor.philos[2].monitor->m_writing);
+	// monitor.philos[0].monitor->time_to_die = 999;
+	// print_monitor(monitor);
 	
 	i = 0;
 	while (i < monitor.num_of_philos)
 	{
 		pthread_create(&monitor.philos[i].thread, NULL, philosophers, &(monitor.philos[i]));
+		pthread_detach(monitor.philos[i].thread);
 		i++;
 	}
-
 	i = 0;
 	while (i < monitor.num_of_philos)
 	{
-		pthread_join(monitor.philos[i].thread, NULL);
+		pthread_create(&thread, NULL, monitor_thread, &monitor.philos[i]);
+		pthread_detach(thread);
 		i++;
 	}
-
+	pthread_mutex_lock(&(monitor.m_is_finish));
+	pthread_mutex_unlock(&(monitor.m_is_finish));
 	return (0);
 }
 
@@ -60,7 +74,6 @@ bool init_monitor(int argc, char *argv[], t_monitor *monitor)
 	int i;
 	if (argc != 5 && argc != 6)
 		return (false);
-	// printf("%s, %d\n", __FILE__, __LINE__);
 	monitor->num_of_philos = ft_atoi(argv[1]);
 	monitor->time_to_die = ft_atoi(argv[2]);
 	monitor->time_to_eat = ft_atoi(argv[3]);
@@ -75,65 +88,113 @@ bool init_monitor(int argc, char *argv[], t_monitor *monitor)
 		pthread_mutex_init(&(monitor->forks[i]), NULL);
 		i++;
 	}
+	pthread_mutex_init(&(monitor->m_is_finish), NULL);
+	pthread_mutex_init(&(monitor->m_writing), NULL);
+	pthread_mutex_lock(&(monitor->m_is_finish));
 	return (true);
 }
 
 bool init_philo(t_monitor *monitor)
 {
+	t_philo *philos;
 	int	i;
 	
-	monitor->philos = malloc(sizeof(t_philo) * monitor->num_of_philos);
-	if (!(monitor->philos))
+	philos = malloc(sizeof(t_philo) * monitor->num_of_philos);
+	if (!(philos))
 		return (false);
+	monitor->philos = philos;
 	i = 0;
 	while (i < monitor->num_of_philos)
 	{
-		monitor->philos[i].id = i + 1;
-		monitor->philos[i].right = i;
-		monitor->philos[i].left = i + 1;
-		if (monitor->philos[i].left == monitor->num_of_philos)
-			monitor->philos[i].left = 0;
-		monitor->philos[i].monitor = monitor;
+		philos[i].id = i + 1;
+		philos[i].right = i;
+		philos[i].left = i + 1;
+		if (philos[i].left == monitor->num_of_philos)
+			philos[i].left = 0;
+		philos[i].time_last_meal = 0;
+		pthread_mutex_init(&(philos[i].m_time_last_meal), NULL);
+		philos[i].monitor = monitor;
 		i++;
 	}
 	return (true);
 }
 
+void	*monitor_thread(void *arg)
+{
+	t_philo		*philo;
+	t_monitor	*monitor;
+
+	philo = arg;
+	monitor = philo->monitor;
+	while (true)
+	{
+		if (is_philo_died(philo))
+		{
+			// pthread_mutex_lock(&(monitor->m_writing));
+			printf("%lld %d died\n", get_timestamp(), philo->id);
+			pthread_mutex_unlock(&(monitor->m_is_finish));
+			return (NULL);
+		}
+		else 
+			pthread_mutex_unlock(&(monitor->m_writing));
+	}
+	return (NULL);
+}
+
+bool	is_philo_died(t_philo *philo)
+{
+	bool		ret;
+	t_monitor	*monitor;
+
+	ret = false;
+	monitor = philo->monitor;
+	pthread_mutex_lock(&(monitor->m_writing));
+	pthread_mutex_lock(&(philo->m_time_last_meal));
+	if (philo->time_last_meal != 0)
+	{
+		if (get_timestamp() - philo->time_last_meal >= monitor->time_to_die)
+		{
+			ret = true;
+		}
+	}
+	pthread_mutex_unlock(&(philo->m_time_last_meal));
+	return (ret);
+}
+
 void	*philosophers(void *arg)
 {
-	t_philo *philo;
-	t_monitor *monitor;
+	t_philo		*philo;
+	t_monitor	*monitor;
 
 	philo = arg;
 	monitor = philo->monitor;
 	if (philo->id % 2 == 1)
 		usleep(200);
-	grab_fork(philo->monitor, philo->id, philo->right);
-	grab_fork(philo->monitor, philo->id, philo->left);
-// eating
-	eating(philo->id, &(philo->time_last_meal), monitor->time_to_eat);
-// down fork
-	down_forks(monitor, philo->right, philo->left);
-// sleep
-	sleeping(monitor->time_to_sleep, philo->id);
-// thinking
-	thinking(philo->id);
-
-
+	while (true)
+	{
+		grab_fork(philo->monitor, philo->id, philo->right);
+		grab_fork(philo->monitor, philo->id, philo->left);
+		eating(philo, monitor->time_to_eat);
+		down_forks(monitor, philo->right, philo->left);
+		sleeping(monitor->time_to_sleep, philo->id, &(monitor->m_writing));
+		thinking(philo->id, &(monitor->m_writing));
+	}
 	return (NULL);
 }
 
 void	grab_fork(t_monitor *monitor, int id, int index)
 {
 	pthread_mutex_lock(&(monitor->forks[index]));
-	printf("%lld %d has taken a fork\n", get_timestamp(), id);
+	print_log(id, "has taken a fork", &(monitor->m_writing));
 }
 
-void	eating(int id, long long *time_last_meal, int time_to_eat)
+void	eating(t_philo *philo, int time_to_eat)
 {
-	*time_last_meal = get_timestamp();
-	printf("%lld %d is eating\n", *time_last_meal, id);
-	while (get_timestamp() - *time_last_meal < time_to_eat)
+	pthread_mutex_lock(&(philo->m_time_last_meal));
+	philo->time_last_meal = get_timestamp();
+	pthread_mutex_unlock(&(philo->m_time_last_meal));
+	print_log(philo->id, "is eating", &(philo->monitor->m_writing));
+	while (get_timestamp() - philo->time_last_meal < time_to_eat)
 		usleep(1 * 1000);
 }
 
@@ -143,19 +204,19 @@ void	down_forks(t_monitor *monitor, int right, int left)
 	pthread_mutex_unlock(&(monitor->forks[left]));
 }
 
-void	sleeping(int time_to_sleep, int id)
+void	sleeping(int time_to_sleep, int id, pthread_mutex_t *m_writing)
 {
 	long long	time_start;
 
 	time_start = get_timestamp();
-	printf("%lld %d is sleeping\n", time_start, id);
+	print_log(id, "is sleeping", m_writing);
 	while (get_timestamp() - time_start < time_to_sleep)
 		usleep(1 * 1000);
 }
 
-void	thinking(int id)
+void	thinking(int id, pthread_mutex_t *m_writing)
 {
-	printf("%lld %d is is thinking\n", get_timestamp(), id);
+	print_log(id, "is thinking", m_writing);
 }
 
 long long	get_timestamp(void)
@@ -164,6 +225,13 @@ long long	get_timestamp(void)
 	if (gettimeofday(&tv, NULL) == -1)
 		return (-1);
 	return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
+}
+
+void	print_log(int id, char *act_msg, pthread_mutex_t *m_writing)
+{
+	pthread_mutex_lock(m_writing);
+	printf("%lld %d %s\n", get_timestamp(), id, act_msg);
+	pthread_mutex_unlock(m_writing);
 }
 
 // test
