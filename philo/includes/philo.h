@@ -6,7 +6,7 @@
 /*   By: shima <shima@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/27 10:40:17 by shima             #+#    #+#             */
-/*   Updated: 2022/09/06 16:43:05 by shima            ###   ########.fr       */
+/*   Updated: 2022/09/07 13:52:12 by shima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ typedef struct s_philo
 	bool				is_ate;
 	long long			time_last_meal;
 	pthread_mutex_t		m_time_last_meal;
+	pthread_mutex_t		m_is_finish_act;
 	pthread_t			thread;
 	struct s_monitor	*monitor;
 }	t_philo;

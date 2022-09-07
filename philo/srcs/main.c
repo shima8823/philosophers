@@ -6,7 +6,7 @@
 /*   By: shima <shima@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/27 10:39:50 by shima             #+#    #+#             */
-/*   Updated: 2022/09/07 12:03:26 by shima            ###   ########.fr       */
+/*   Updated: 2022/09/07 13:55:16 by shima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -128,6 +128,7 @@ bool init_philo(t_monitor *monitor)
 		philos[i].is_ate = false;
 		philos[i].time_last_meal = 0;
 		pthread_mutex_init(&(philos[i].m_time_last_meal), NULL);
+		pthread_mutex_init(&(philos[i].m_is_finish_act), NULL);
 		philos[i].monitor = monitor;
 		i++;
 	}
@@ -147,6 +148,7 @@ void	*monitor_thread(void *arg)
 		do_philo_must_eat = true;
 	while (true)
 	{
+		pthread_mutex_lock(&(philo->m_is_finish_act));
 		if (is_philo_dead(philo))
 		{
 			pthread_mutex_lock(&(monitor->m_writing));
@@ -164,7 +166,8 @@ void	*monitor_thread(void *arg)
 		// printf("monitor.count_eat: %d\n", monitor->count_philos_ate);
 		// if (philo->count_eat == 2)
 		// 	printf("\nid: [%d] ear_count: %d\n", philo->id, philo->count_eat);
-		usleep(1000 * 3);
+		pthread_mutex_unlock(&(philo->m_is_finish_act));
+		// usleep(1000 * 3);
 	}
 	return (NULL);
 }
@@ -223,12 +226,24 @@ void	*philosophers(void *arg)
 		usleep(800);
 	while (true)
 	{
+		pthread_mutex_lock(&(philo->m_is_finish_act));
 		grab_fork(philo->monitor, philo->id, philo->right);
+		pthread_mutex_unlock(&(philo->m_is_finish_act));
+		pthread_mutex_lock(&(philo->m_is_finish_act));
 		grab_fork(philo->monitor, philo->id, philo->left);
+		pthread_mutex_unlock(&(philo->m_is_finish_act));
+		pthread_mutex_lock(&(philo->m_is_finish_act));
 		eating(philo, monitor->time_to_eat);
+		pthread_mutex_unlock(&(philo->m_is_finish_act));
+		pthread_mutex_lock(&(philo->m_is_finish_act));
 		down_forks(monitor, philo->right, philo->left);
+		pthread_mutex_unlock(&(philo->m_is_finish_act));
+		pthread_mutex_lock(&(philo->m_is_finish_act));
 		sleeping(monitor->time_to_sleep, philo->id, &(monitor->m_writing));
+		pthread_mutex_unlock(&(philo->m_is_finish_act));
+		pthread_mutex_lock(&(philo->m_is_finish_act));
 		thinking(philo->id, &(monitor->m_writing));
+		pthread_mutex_unlock(&(philo->m_is_finish_act));
 	}
 	return (NULL);
 }
@@ -246,7 +261,7 @@ void	eating(t_philo *philo, int time_to_eat)
 	philo->time_last_meal = get_timestamp();
 	pthread_mutex_unlock(&(philo->m_time_last_meal));
 	while (get_timestamp() - philo->time_last_meal < time_to_eat)
-		usleep(1 * 1000);
+		usleep(1000);
 	pthread_mutex_lock(&(philo->m_count_eat));
 	philo->count_eat++;
 	pthread_mutex_unlock(&(philo->m_count_eat));
