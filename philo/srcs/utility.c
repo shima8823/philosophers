@@ -6,7 +6,7 @@
 /*   By: shima <shima@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/27 11:28:55 by shima             #+#    #+#             */
-/*   Updated: 2022/09/06 15:30:26 by shima            ###   ########.fr       */
+/*   Updated: 2022/09/08 11:04:05 by shima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,14 @@
 
 static int	ft_isspace(int c);
 int			ft_isdigit(int c);
+
+long long	get_timestamp(void)
+{
+	struct timeval	tv;
+	if (gettimeofday(&tv, NULL) == -1)
+		return (-1);
+	return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
+}
 
 int	ft_atoi(const char *str, bool *is_valid)
 {
