@@ -6,7 +6,7 @@
 /*   By: shima <shima@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/27 11:28:55 by shima             #+#    #+#             */
-/*   Updated: 2022/09/09 12:44:12 by shima            ###   ########.fr       */
+/*   Updated: 2022/09/09 20:13:42 by shima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@ static int	ft_isdigit(int c);
 long long	get_timestamp(void)
 {
 	struct timeval	tv;
+
 	if (gettimeofday(&tv, NULL) == -1)
 		return (-1);
 	return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
@@ -27,6 +28,13 @@ void	all_free(t_monitor *monitor)
 	free(monitor->forks);
 	free(monitor->threads);
 	free(monitor->philos);
+}
+
+void	print_log(int id, char *act_msg, pthread_mutex_t *m_writing)
+{
+	pthread_mutex_lock(m_writing);
+	printf("%lld %d %s\n", get_timestamp(), id, act_msg);
+	pthread_mutex_unlock(m_writing);
 }
 
 int	ft_atoi(const char *str)

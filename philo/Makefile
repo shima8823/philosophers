@@ -1,5 +1,4 @@
-CFLAGS = -pthread
-# CFLAGS = -Wall -Wextra -Werror
+CFLAGS = -Wall -Wextra -Werror -pthread
 CPPFLAGS = -I includes
 NAME = philo
 SRCS = main.c utility.c th_monitor.c th_philo.c init.c
