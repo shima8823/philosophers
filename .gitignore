@@ -2,3 +2,7 @@
 *.o
 philo/philo
 philo/Philosphers-42Project-Tester
+philo/socrates
+philo/philosophers_test
+playground.c
+a.out

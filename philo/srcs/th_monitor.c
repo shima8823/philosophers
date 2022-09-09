@@ -6,29 +6,37 @@
 /*   By: shima <shima@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/08 11:02:56 by shima             #+#    #+#             */
-/*   Updated: 2022/09/08 11:03:07 by shima            ###   ########.fr       */
+/*   Updated: 2022/09/09 11:23:35 by shima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/philo.h"
+
+bool	is_philo_dead(t_philo *philo, long long timestamp);
+bool	is_philos_ate(t_philo *philo, t_monitor *monitor);
 
 void	*monitor_thread(void *arg)
 {
 	t_philo		*philo;
 	t_monitor	*monitor;
 	bool		do_philo_must_eat;
+	long long	timestamp;
 
 	philo = arg;
 	monitor = philo->monitor;
 	do_philo_must_eat = false;
-	if (monitor->times_philo_must_eat != -1)
+	if (monitor->times_philo_must_eat != -2)
 		do_philo_must_eat = true;
 	while (true)
 	{
-		if (is_philo_dead(philo))
+		timestamp = get_timestamp();
+		pthread_mutex_lock(&philo->m_is_thinking);
+		if (is_philo_dead(philo, timestamp))
 		{
+			// printf("m_writing			: %p\n", &(monitor->m_writing));
 			pthread_mutex_lock(&(monitor->m_writing));
-			printf("%lld %d died\n", get_timestamp(), philo->id);
+			// print_log(philo->id, "died", monitor);
+			printf("%lld %d died\n", timestamp, philo->id);
 			pthread_mutex_unlock(&(monitor->m_is_finish));
 			return (NULL);
 		}
@@ -42,12 +50,13 @@ void	*monitor_thread(void *arg)
 		// printf("monitor.count_eat: %d\n", monitor->count_philos_ate);
 		// if (philo->count_eat == 2)
 		// 	printf("\nid: [%d] ear_count: %d\n", philo->id, philo->count_eat);
+		pthread_mutex_unlock(&philo->m_is_thinking);
 		usleep(1000 * 3);
 	}
 	return (NULL);
 }
 
-bool	is_philo_dead(t_philo *philo)
+bool	is_philo_dead(t_philo *philo, long long timestamp)
 {
 	t_monitor	*monitor;
 
@@ -56,7 +65,7 @@ bool	is_philo_dead(t_philo *philo)
 	pthread_mutex_lock(&(philo->m_time_last_meal));
 	if (philo->time_last_meal != 0)
 	{
-		if (get_timestamp() - philo->time_last_meal >= monitor->time_to_die)
+		if (timestamp - philo->time_last_meal >= monitor->time_to_die)
 			return (true);
 	}
 	pthread_mutex_unlock(&(philo->m_time_last_meal));

@@ -6,7 +6,7 @@
 /*   By: shima <shima@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/08 11:03:40 by shima             #+#    #+#             */
-/*   Updated: 2022/09/08 11:03:47 by shima            ###   ########.fr       */
+/*   Updated: 2022/09/08 14:02:27 by shima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,30 +23,31 @@ void	*philosophers(void *arg)
 		usleep(800);
 	while (true)
 	{
-		grab_fork(philo->monitor, philo->id, philo->right);
-		grab_fork(philo->monitor, philo->id, philo->left);
+		grab_forks(monitor, philo);
 		eating(philo, monitor->time_to_eat);
 		down_forks(monitor, philo->right, philo->left);
-		sleeping(monitor->time_to_sleep, philo->id, &(monitor->m_writing));
-		thinking(philo->id, &(monitor->m_writing));
+		sleeping(monitor->time_to_sleep, philo->id, monitor, philo);
+		thinking(philo->id, monitor, &(philo->m_is_thinking), philo);
 	}
 	return (NULL);
 }
 
-void	grab_fork(t_monitor *monitor, int id, int index)
+void	grab_forks(t_monitor *monitor, t_philo *philo)
 {
-	pthread_mutex_lock(&(monitor->forks[index]));
-	print_log(id, "has taken a fork", &(monitor->m_writing));
+	pthread_mutex_lock(&(monitor->forks[philo->right]));
+	print_log(philo->id, "has taken a fork", monitor, philo);
+	pthread_mutex_lock(&(monitor->forks[philo->left]));
+	print_log(philo->id, "has taken a fork", monitor, philo);
 }
 
 void	eating(t_philo *philo, int time_to_eat)
 {
-	print_log(philo->id, "is eating", &(philo->monitor->m_writing));
 	pthread_mutex_lock(&(philo->m_time_last_meal));
 	philo->time_last_meal = get_timestamp();
 	pthread_mutex_unlock(&(philo->m_time_last_meal));
+	print_log(philo->id, "is eating", philo->monitor, philo);
 	while (get_timestamp() - philo->time_last_meal < time_to_eat)
-		usleep(1 * 1000);
+		usleep(1000);
 	pthread_mutex_lock(&(philo->m_count_eat));
 	philo->count_eat++;
 	pthread_mutex_unlock(&(philo->m_count_eat));
@@ -58,17 +59,20 @@ void	down_forks(t_monitor *monitor, int right, int left)
 	pthread_mutex_unlock(&(monitor->forks[left]));
 }
 
-void	sleeping(int time_to_sleep, int id, pthread_mutex_t *m_writing)
+void	sleeping(int time_to_sleep, int id, t_monitor *monitor, t_philo *philo)
 {
 	long long	time_start;
 
+	print_log(id, "is sleeping", monitor, philo);
 	time_start = get_timestamp();
-	print_log(id, "is sleeping", m_writing);
-	while (get_timestamp() - time_start < time_to_sleep)
-		usleep(1 * 1000);
+	time_start += time_to_sleep;
+	while (get_timestamp() < time_start)
+		usleep(1000);
 }
 
-void	thinking(int id, pthread_mutex_t *m_writing)
+void	thinking(int id, t_monitor *monitor, pthread_mutex_t *m_is_thinking, t_philo *philo)
 {
-	print_log(id, "is thinking", m_writing);
+	pthread_mutex_lock(m_is_thinking);
+	print_log(id, "is thinking", monitor, philo);
+	pthread_mutex_unlock(m_is_thinking);
 }

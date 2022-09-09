@@ -1,4 +1,4 @@
-CFLAGS = 
+CFLAGS = -pthread
 # CFLAGS = -Wall -Wextra -Werror
 CPPFLAGS = -I includes
 NAME = philo
@@ -10,7 +10,7 @@ VPATH = srcs
 all: $(NAME)
 
 $(NAME): $(OBJ)
-	$(CC) -o $(NAME) $(OBJ)
+	$(CC) -o $(NAME) $(OBJ) 
 
 $(OBJDIR)/%.o: %.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -o $@ -c $<
