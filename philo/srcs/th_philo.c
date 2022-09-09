@@ -6,7 +6,7 @@
 /*   By: shima <shima@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/08 11:03:40 by shima             #+#    #+#             */
-/*   Updated: 2022/09/09 13:04:48 by shima            ###   ########.fr       */
+/*   Updated: 2022/09/09 19:01:29 by shima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,12 +45,16 @@ void	eating(t_philo *philo, int time_to_eat)
 	pthread_mutex_lock(&(philo->m_time_last_meal));
 	philo->time_last_meal = get_timestamp();
 	pthread_mutex_unlock(&(philo->m_time_last_meal));
-	print_log(philo->id, "is eating", philo->monitor, philo);
-	while (get_timestamp() - philo->time_last_meal < time_to_eat)
-		usleep(1000);
+	// print_log(philo->id, "is eating", philo->monitor, philo);
+	pthread_mutex_lock(&(philo->monitor->m_writing));
+	printf("%lld %d %s\n", get_timestamp(), philo->id, "is eating");
 	pthread_mutex_lock(&(philo->m_count_eat));
 	philo->count_eat++;
 	pthread_mutex_unlock(&(philo->m_count_eat));
+	pthread_mutex_unlock(&(philo->monitor->m_writing));
+
+	while (get_timestamp() - philo->time_last_meal < time_to_eat)
+		usleep(1000);
 }
 
 void	down_forks(t_monitor *monitor, int right, int left)
