@@ -6,13 +6,13 @@
 /*   By: shima <shima@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/08 11:03:40 by shima             #+#    #+#             */
-/*   Updated: 2022/09/08 14:02:27 by shima            ###   ########.fr       */
+/*   Updated: 2022/09/09 13:04:48 by shima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/philo.h"
 
-void	*philosophers(void *arg)
+void	*philosopher_routine(void *arg)
 {
 	t_philo		*philo;
 	t_monitor	*monitor;
@@ -27,7 +27,7 @@ void	*philosophers(void *arg)
 		eating(philo, monitor->time_to_eat);
 		down_forks(monitor, philo->right, philo->left);
 		sleeping(monitor->time_to_sleep, philo->id, monitor, philo);
-		thinking(philo->id, monitor, &(philo->m_is_thinking), philo);
+		print_log(philo->id, "is thinking", monitor, philo);
 	}
 	return (NULL);
 }
@@ -68,11 +68,4 @@ void	sleeping(int time_to_sleep, int id, t_monitor *monitor, t_philo *philo)
 	time_start += time_to_sleep;
 	while (get_timestamp() < time_start)
 		usleep(1000);
-}
-
-void	thinking(int id, t_monitor *monitor, pthread_mutex_t *m_is_thinking, t_philo *philo)
-{
-	pthread_mutex_lock(m_is_thinking);
-	print_log(id, "is thinking", monitor, philo);
-	pthread_mutex_unlock(m_is_thinking);
 }

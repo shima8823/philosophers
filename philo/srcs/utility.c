@@ -6,7 +6,7 @@
 /*   By: shima <shima@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/27 11:28:55 by shima             #+#    #+#             */
-/*   Updated: 2022/09/09 11:44:23 by shima            ###   ########.fr       */
+/*   Updated: 2022/09/09 12:44:12 by shima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ long long	get_timestamp(void)
 void	all_free(t_monitor *monitor)
 {
 	free(monitor->forks);
-	free(monitor->thread);
+	free(monitor->threads);
 	free(monitor->philos);
 }
 
