@@ -6,7 +6,7 @@
 /*   By: shima <shima@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/08 11:11:31 by shima             #+#    #+#             */
-/*   Updated: 2022/09/09 20:42:31 by shima            ###   ########.fr       */
+/*   Updated: 2022/09/10 10:47:50 by shima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,21 +17,24 @@ static bool	philo_is_one(t_philo *philo, t_monitor *monitor);
 
 int	main(int argc, char *argv[])
 {
-	t_monitor	monitor;
+	t_monitor	*monitor;
 
 	if (argc != 5 && argc != 6)
 		return (EXIT_FAILURE);
-	if (!init_monitor(argc, argv, &monitor))
+	monitor = malloc(sizeof(t_monitor));
+	if (!monitor)
+		return (false);
+	if (!init_monitor(argc, argv, monitor))
 		return (EXIT_FAILURE);
-	if (!init_philo(&monitor)
-		|| !create_threads(&monitor))
+	if (!init_philo(monitor)
+		|| !create_threads(monitor))
 	{
-		all_free(&monitor);
+		all_free(monitor);
 		return (EXIT_FAILURE);
 	}
-	pthread_mutex_lock(&(monitor.m_is_finish));
-	all_free(&monitor);
-	pthread_mutex_unlock(&(monitor.m_is_finish));
+	pthread_mutex_lock(&(monitor->m_is_finish));
+	pthread_mutex_unlock(&(monitor->m_is_finish));
+	all_free(monitor);
 	return (EXIT_SUCCESS);
 }
 

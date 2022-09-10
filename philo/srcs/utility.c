@@ -6,7 +6,7 @@
 /*   By: shima <shima@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/27 11:28:55 by shima             #+#    #+#             */
-/*   Updated: 2022/09/09 20:13:42 by shima            ###   ########.fr       */
+/*   Updated: 2022/09/10 09:42:24 by shima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ void	all_free(t_monitor *monitor)
 	free(monitor->forks);
 	free(monitor->threads);
 	free(monitor->philos);
+	free(monitor);
 }
 
 void	print_log(int id, char *act_msg, pthread_mutex_t *m_writing)

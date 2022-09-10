@@ -6,7 +6,7 @@
 /*   By: shima <shima@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/08 11:12:36 by shima             #+#    #+#             */
-/*   Updated: 2022/09/09 20:55:59 by shima            ###   ########.fr       */
+/*   Updated: 2022/09/10 11:15:53 by shima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ typedef struct s_monitor
 	int				time_to_eat;
 	int				time_to_sleep;
 	int				times_philo_must_eat;
+	bool			is_must_eat;
 	int				count_philos_ate;
 	pthread_mutex_t	m_count_philos_ate;
 	pthread_mutex_t	m_writing;
@@ -49,7 +50,6 @@ typedef struct s_monitor
 	pthread_mutex_t	*forks;
 	pthread_t		*threads;
 	t_philo			*philos;
-	bool			is_error;
 }	t_monitor;
 
 // init.c

@@ -6,7 +6,7 @@
 /*   By: shima <shima@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/08 11:01:10 by shima             #+#    #+#             */
-/*   Updated: 2022/09/09 12:48:28 by shima            ###   ########.fr       */
+/*   Updated: 2022/09/10 11:17:16 by shima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,17 +44,23 @@ bool	init_philo(t_monitor *monitor)
 
 bool	init_monitor(int argc, char *argv[], t_monitor *monitor)
 {
+	monitor->is_must_eat = true;
+	monitor->count_philos_ate = 0;
 	if (!args_to_variable(argc, argv, monitor))
+	{
+		free(monitor);
 		return (false);
+	}
 	if (!malloc_variable(monitor))
+	{
+		free(monitor);
 		return (false);
+	}
 	if (!mutex_init(monitor))
 	{
 		all_free(monitor);
 		return (false);
 	}
-	monitor->count_philos_ate = 0;
-	monitor->is_error = false;
 	return (true);
 }
 
@@ -67,7 +73,7 @@ static bool	args_to_variable(int argc, char *argv[], t_monitor *monitor)
 	if (argc == 6)
 		monitor->times_philo_must_eat = ft_atoi(argv[5]);
 	else
-		monitor->times_philo_must_eat = -2;
+		monitor->is_must_eat = false;
 	if (monitor->num_of_philos == -1
 		|| monitor->time_to_die == -1
 		|| monitor->time_to_eat == -1
