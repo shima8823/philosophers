@@ -20,4 +20,9 @@ clean:
 fclean: clean
 	$(RM) $(NAME)
 
+leak:
+	@make re
+	leaks -q -atExit -- ./$(NAME) 5 800 200 200 5
+	@make fclean
+
 re: fclean all

@@ -6,7 +6,7 @@
 /*   By: shima <shima@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/08 11:11:31 by shima             #+#    #+#             */
-/*   Updated: 2022/09/10 10:47:50 by shima            ###   ########.fr       */
+/*   Updated: 2022/09/11 10:11:35 by shima            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ int	main(int argc, char *argv[])
 		return (EXIT_FAILURE);
 	monitor = malloc(sizeof(t_monitor));
 	if (!monitor)
-		return (false);
+		return (EXIT_FAILURE);
 	if (!init_monitor(argc, argv, monitor))
 		return (EXIT_FAILURE);
 	if (!init_philo(monitor)
